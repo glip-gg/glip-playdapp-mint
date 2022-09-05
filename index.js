@@ -85,11 +85,11 @@ async function checkWallet() {
 
         walletAddress = userInfo.publicAddress
 
-        if (!(whitelistAddresses.map((x) => x.toLowerCase()).includes(walletAddress.toLowerCase()))) {
-            document.getElementById('title').innerHTML = `You didn't register to claim NFT<br>Keep an eye on next reward in Glip app`
-            hideLoading()
-            return
-        }
+        // if (!(whitelistAddresses.map((x) => x.toLowerCase()).includes(walletAddress.toLowerCase()))) {
+        //     document.getElementById('title').innerHTML = `You didn't register to claim NFT<br>Keep an eye on next reward in Glip app`
+        //     hideLoading()
+        //     return
+        // }
 
         document.getElementById('title').innerHTML = 'Glip Wallet connected'
         document.getElementById('subtitle').innerHTML = userInfo.name
@@ -228,4 +228,4 @@ function hideLoading() {
     document.getElementById('loader').style.visibility = 'hidden'
 }
 
-let whitelistAddresses = ['0x9bf19a87b973ebf02f0c6c1e5d01ebdb099295b7']
+let whitelistAddresses = ['0x9bf19a87b973ebf02f0c6c1e5d01ebdb099295b7', '0x697530603b985817C9d81154eC3eE0384123feA1']
