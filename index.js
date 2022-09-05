@@ -107,7 +107,7 @@ async function checkWallet() {
         if (window.localStorage.getItem('minted')) {
             isMinted = true
             document.getElementById('claim-button').innerHTML = 'NFT claimed!'
-            document.getElementById('button-description').style.visibility = 'gone'
+            document.getElementById('button-description').style.visibility = 'hidden'
         }
 
         checkAction()
@@ -230,7 +230,7 @@ async function approveTransaction(signedTx) {
     console.log(signedTx)
 
     document.getElementById('claim-button').innerHTML = 'Claiming NFT...'
-    document.getElementById('button-description').style.visibility = 'gone'
+    document.getElementById('button-description').style.visibility = 'hidden'
 
     showLoading()
 
