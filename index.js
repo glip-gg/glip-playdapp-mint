@@ -99,9 +99,9 @@ async function checkWallet() {
 
         hideLoading()
         
-        // if (Date.now() / 1000 < mintStartTime) {
-        //     document.getElementById('claim-button').innerHTML = 'Claim not yet started'
-        // }
+        if (Date.now() / 1000 < mintStartTime) {
+            document.getElementById('claim-button').innerHTML = 'Claim not yet started'
+        }
 
         checkBalance()
 
@@ -116,9 +116,9 @@ function enoughBalance() {
 }
 
 async function mint() {
-    // if (Date.now() / 1000 < mintStartTime) {
-    //     return
-    // }
+    if (Date.now() / 1000 < mintStartTime) {
+        return
+    }
 
     isMinting = true
     showLoading()
@@ -205,8 +205,8 @@ async function approveTransaction(signedTx) {
     document.getElementById('claim-button').innerHTML = 'Claiming NFT...'
     showLoading()
 
-    // let txResponse = await provider.sendTransaction(signedTx)
-    // await txResponse.wait()
+    let txResponse = await provider.sendTransaction(signedTx)
+    await txResponse.wait()
 
     hideLoading()
     document.getElementById('claim-button').innerHTML = 'NFT Claimed!'
