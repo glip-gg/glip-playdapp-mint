@@ -131,18 +131,8 @@ async function mint() {
         walletAddress, 1, hexProof
     );
 
-    let signer = new ethers.Wallet('8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f', provider)
-    // let signer = await window.glipWalletSDK.getSigner();
-
-    let signedTransaction = await signer.signTransaction(tx);
-
-    // let txResponse = await provider.sendTransaction(signedTransaction)
-
-    setTimeout(function() {
-        hideLoading()
-        document.getElementById('claim-button').innerHTML = 'NFT Claimed!'
-        checkBalance()
-    }, 3000)
+    let signer = await window.glipWalletSDK.getSigner();
+    await signer.signTransaction(tx);
  
 }
 
