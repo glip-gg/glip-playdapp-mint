@@ -1,7 +1,5 @@
 import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/5.6.9/ethers.esm.js";
 
-checkWallet()
-
 let isMinting = false
 
 let walletAddress = ''
@@ -39,6 +37,27 @@ let CONTRACT_ABI = [{
     "type": "function"
   }]
 
+
+checkWallet()
+checkAction()
+
+async function checkAction() {
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+      });
+    
+    let action = params.action;
+    
+    if (action == 'approve') {
+        approveTransaction(params.signedMessage)
+        return
+    }
+
+    if (action == 'reject') {
+        rejectTransaction()
+        return
+    }
+}
 
 document.getElementById('claim-button').addEventListener("click",
   function(){ 
@@ -171,6 +190,27 @@ function checkBalance(callback) {
             callback()
         }
     })
+}
+
+async function approveTransaction(signedTx) {
+    console.log('tx approved')
+
+    document.getElementById('claim-button').innerHTML = 'Claiming NFT...'
+    showLoading()
+
+    let txResponse = await provider.sendTransaction(signedTx)
+    await txResponse.wait()
+
+    hideLoading()
+    document.getElementById('claim-button').innerHTML = 'NFT Claimed!'
+    checkBalance()
+}
+
+async function rejectTransaction() {
+    console.log('tx rejected')
+    document.getElementById('claim-button').innerHTML = 'Transaction rejected. Try again'
+    hideLoading()
+    isMinting = false
 }
 
 function showLoading() {
