@@ -5,6 +5,8 @@ let isMinting = false
 let walletAddress = ''
 let walletId = ''
 
+let mintStartTime = 1662418800
+
 let walletBalance = 0
 
 let minGasRequired = 0.01 //MATIC
@@ -49,7 +51,7 @@ async function checkAction() {
     let action = params.action;
     
     if (action == 'approve') {
-        approveTransaction(params.signedMessage)
+        approveTransaction(params.signedTransaction)
         return
     }
 
@@ -83,6 +85,11 @@ async function checkWallet() {
 
         walletAddress = userInfo.publicAddress
 
+        if (!(whitelistAddresses.map((x) => x.toLowerCase()).includes(walletAddress.toLowerCase()))) {
+            document.getElementById('title').innerHTML = `You didn't register to claim NFT<br>Keep an eye on next reward in Glip app`
+            hideLoading()
+            return
+        }
 
         document.getElementById('title').innerHTML = 'Glip Wallet connected'
         document.getElementById('subtitle').innerHTML = userInfo.name
@@ -92,10 +99,14 @@ async function checkWallet() {
 
         hideLoading()
         
+        // if (Date.now() / 1000 < mintStartTime) {
+        //     document.getElementById('claim-button').innerHTML = 'Claim not yet started'
+        // }
+
         checkBalance()
 
     } else {
-        document.getElementById('title').innerHTML = 'Wallet not found<br>Create your Glip Wallet from the app.'
+        document.getElementById('title').innerHTML = 'Wallet not found<br>You missed your free NFT. Create your Glip Wallet from the app and keep an eye on next reward.'
         hideLoading()
     }
 }
@@ -105,6 +116,10 @@ function enoughBalance() {
 }
 
 async function mint() {
+    // if (Date.now() / 1000 < mintStartTime) {
+    //     return
+    // }
+
     isMinting = true
     showLoading()
 
@@ -186,7 +201,7 @@ async function approveTransaction(signedTx) {
     console.log('tx approved')
 
     console.log(signedTx)
-    
+
     document.getElementById('claim-button').innerHTML = 'Claiming NFT...'
     showLoading()
 
