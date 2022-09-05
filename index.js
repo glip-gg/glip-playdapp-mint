@@ -42,7 +42,6 @@ let CONTRACT_ABI = [{
 
 
 checkWallet()
-checkAction()
 
 async function checkAction() {
     const params = new Proxy(new URLSearchParams(window.location.search), {
@@ -105,6 +104,13 @@ async function checkWallet() {
             document.getElementById('claim-button').innerHTML = 'Claim not yet started'
         }
 
+        if (window.localStorage.getItem('minted')) {
+            isMinted = true
+            document.getElementById('claim-button').innerHTML = 'NFT claimed!'
+            document.getElementById('button-description').style.visibility = 'gone'
+        }
+
+        checkAction()
         checkBalance()
 
     } else {
@@ -224,17 +230,31 @@ async function approveTransaction(signedTx) {
     console.log(signedTx)
 
     document.getElementById('claim-button').innerHTML = 'Claiming NFT...'
+    document.getElementById('button-description').style.visibility = 'gone'
+
     showLoading()
 
     let txResponse = await provider.sendTransaction(signedTx)
     console.log(txResponse)
-    // await txResponse.wait()
+
+    try {
+        let receipt = await txResponse.wait()
+        if (receipt.status == 1) {
+            document.getElementById('claim-button').innerHTML = 'NFT Claimed!'
+            isMinted = true
+            window.localStorage.setItem('minted', true)
+        } else {
+            document.getElementById('claim-button').innerHTML = 'Failed :('
+        }
+    } catch {
+        document.getElementById('claim-button').innerHTML = 'Failed :('
+    }
 
     hideLoading()
-    document.getElementById('claim-button').innerHTML = 'NFT Claimed!'
+   
     checkBalance()
 
-    isMinted = true
+ 
 }
 
 async function rejectTransaction() {
