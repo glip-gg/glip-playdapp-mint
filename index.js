@@ -5,9 +5,11 @@ checkWallet()
 let isMinting = false
 
 let walletAddress = ''
+let walletId = ''
+
 let walletBalance = 0
 
-let minGasRequired = 0.02 //MATIC
+let minGasRequired = 0.01 //MATIC
 
 const provider = new ethers.providers.JsonRpcProvider("https://polygon-rpc.com");
 
@@ -55,10 +57,13 @@ async function checkWallet() {
       }
     );
     if (await window.glipWalletSDK.isConnected()) {
-        let walletId = await window.glipWalletSDK.getWalletID()
+        walletId = await window.glipWalletSDK.getWalletID()
         let userInfo = await window.glipWalletSDK.getUserInfo();
         
+        console.log('walletId', walletId)
+
         walletAddress = userInfo.publicAddress
+
 
         document.getElementById('title').innerHTML = 'Glip Wallet connected'
         document.getElementById('subtitle').innerHTML = userInfo.name
@@ -76,11 +81,15 @@ async function checkWallet() {
     }
 }
 
+function enoughBalance() {
+    return walletBalance >= minGasRequired
+}
+
 async function mint() {
     isMinting = true
     showLoading()
 
-    if (walletBalance < minGasRequired) {
+    if (!enoughBalance()) {
         requestBalance()
         return
     }
@@ -93,7 +102,7 @@ async function mint() {
     const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true});
     const rootHash = merkleTree.getRoot();
 
-    const claimingAddress = leafNodes[6];
+    const claimingAddress = leafNodes[0];
     const hexProof = merkleTree.getHexProof(claimingAddress);
 
     console.log("Root Hash: ", rootHash);
@@ -119,22 +128,48 @@ async function mint() {
 }
 
 function requestBalance() {
-    document.getElementById('claim-button').innerHTML = 'Adding balance to your wallet...'
-    setTimeout(function() {
-        //TODO temp
-        walletBalance = 2
+    console.log('requesting balance')
 
-        checkBalance()
-        mint()
-    }, 2000)
+    document.getElementById('claim-button').innerHTML = 'Adding balance to your wallet...'
+
+    const options = {method: 'POST', headers: {Accept: 'application/json'}};
+
+    fetch(`https://be.namasteapis.com/blockchain/v1/glip/wallet/fund?walletId=${walletId}`, options)
+    .then(response => response.json())
+    .then(response => {
+        console.log(response)
+        verifyBalanceChangeAndMint()
+        }
+    )
+    .catch(err => console.error(err));
+  
+
 }
 
-function checkBalance() {
+function verifyBalanceChangeAndMint() {
+    setTimeout(function() {
+        console.log('checking balance increase')
+        checkBalance(function() {
+            if (enoughBalance()) {
+                mint()
+            } else {
+                verifyBalanceChangeAndMint()
+            }
+        })
+        
+    }, 4000)
+}
+
+function checkBalance(callback) {
     provider.getBalance(walletAddress).then((balance) => {
         const balanceInEth = ethers.utils.formatEther(balance)
         console.log(`balance: ${balanceInEth} MATIC`)
         walletBalance = balanceInEth
         document.getElementById('balance').innerHTML = `Available Balance:    ${balanceInEth} MATIC` 
+
+        if (callback) {
+            callback()
+        }
     })
 }
 
@@ -146,4 +181,4 @@ function hideLoading() {
     document.getElementById('loader').style.visibility = 'hidden'
 }
 
-let whitelistAddresses = []
+let whitelistAddresses = ['0x9bf19a87b973ebf02f0c6c1e5d01ebdb099295b7']
