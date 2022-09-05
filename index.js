@@ -185,11 +185,13 @@ function checkBalance(callback) {
 async function approveTransaction(signedTx) {
     console.log('tx approved')
 
+    console.log(signedTx)
+    
     document.getElementById('claim-button').innerHTML = 'Claiming NFT...'
     showLoading()
 
-    let txResponse = await provider.sendTransaction(signedTx)
-    await txResponse.wait()
+    // let txResponse = await provider.sendTransaction(signedTx)
+    // await txResponse.wait()
 
     hideLoading()
     document.getElementById('claim-button').innerHTML = 'NFT Claimed!'
