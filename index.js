@@ -1,6 +1,7 @@
 import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/5.6.9/ethers.esm.js";
 
 let isMinting = false
+let isMinted = false
 
 let walletAddress = ''
 let walletId = ''
@@ -63,7 +64,7 @@ async function checkAction() {
 
 document.getElementById('claim-button').addEventListener("click",
   function(){ 
-    if (isMinting) {
+    if (isMinting || isMinted) {
       
     } else {
       mint()
@@ -84,6 +85,7 @@ async function checkWallet() {
         console.log('walletId', walletId)
 
         walletAddress = userInfo.publicAddress
+        console.log(walletAddress)
 
         // if (!(whitelistAddresses.map((x) => x.toLowerCase()).includes(walletAddress.toLowerCase()))) {
         //     document.getElementById('title').innerHTML = `You didn't register to claim NFT<br>Keep an eye on next reward in Glip app`
@@ -136,15 +138,34 @@ async function mint() {
     const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true});
     const rootHash = merkleTree.getRoot();
 
-    const claimingAddress = leafNodes[0];
-    const hexProof = merkleTree.getHexProof(claimingAddress);
+    const claimingAddress = walletAddress
 
-    console.log("Root Hash: ", rootHash);
+    const hexProof = merkleTree.getHexProof(keccak256(claimingAddress));
+
+    console.log("Root Hash: ", rootHash.toString('hex'));
     console.log(hexProof);
 
+    console.log(merkleTree.verify(hexProof, keccak256(claimingAddress), rootHash))
+
+    const feeData = await provider.getFeeData()
+    const nonce = await provider.getTransactionCount(walletAddress)
+
+    let maxFeePerGas = feeData.maxFeePerGas.toHexString()
+    let maxPriorityFeePerGas = feeData.maxPriorityFeePerGas.toHexString()
+
     const tx = await contract.populateTransaction['publicMint'](
-        walletAddress, 1, hexProof
+        walletAddress, 1, hexProof,
+        { maxFeePerGas: maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas}
     );
+
+    tx.type = 2
+    tx.chainId = 137
+    tx.maxFeePerGas = maxFeePerGas
+    tx.maxPriorityFeePerGas = maxPriorityFeePerGas
+    tx.gasLimit = 200000
+    tx.nonce = nonce
+    
+    console.log(tx)
 
     let signer = await window.glipWalletSDK.getSigner();
     await signer.signTransaction(tx);
@@ -206,11 +227,14 @@ async function approveTransaction(signedTx) {
     showLoading()
 
     let txResponse = await provider.sendTransaction(signedTx)
-    await txResponse.wait()
+    console.log(txResponse)
+    // await txResponse.wait()
 
     hideLoading()
     document.getElementById('claim-button').innerHTML = 'NFT Claimed!'
     checkBalance()
+
+    isMinted = true
 }
 
 async function rejectTransaction() {
