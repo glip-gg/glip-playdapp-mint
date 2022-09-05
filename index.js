@@ -6,7 +6,8 @@ let isMinted = false
 let walletAddress = ''
 let walletId = ''
 
-let mintStartTime = 1662418800
+// let mintStartTime = 1662418800
+let minStartTime = 1662429800
 
 let walletBalance = 0
 
