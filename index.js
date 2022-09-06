@@ -86,12 +86,6 @@ async function checkWallet() {
         walletAddress = userInfo.publicAddress
         console.log(walletAddress)
 
-        // if (!(whitelistAddresses.map((x) => x.toLowerCase()).includes(walletAddress.toLowerCase()))) {
-        //     document.getElementById('title').innerHTML = `You didn't register to claim NFT<br>Keep an eye on next reward in Glip app`
-        //     hideLoading()
-        //     return
-        // }
-
         document.getElementById('title').innerHTML = 'Glip Wallet connected'
         document.getElementById('subtitle').innerHTML = userInfo.name
 
@@ -160,11 +154,14 @@ async function mint() {
     console.log("Root Hash: ", rootHash.toString('hex'));
     console.log(hexProof);
 
-    const feeData = await provider.getFeeData()
     const nonce = await provider.getTransactionCount(walletAddress)
 
-    let maxFeePerGas = feeData.maxFeePerGas.toHexString()
-    let maxPriorityFeePerGas = feeData.maxPriorityFeePerGas.toHexString()
+    // const feeData = await provider.getFeeData()
+    // let maxFeePerGas = feeData.maxFeePerGas.toHexString()
+    // let maxPriorityFeePerGas = feeData.maxPriorityFeePerGas.toHexString()
+
+    let maxFeePerGas = '0x9502F9000'
+    let maxPriorityFeePerGas = '0x9502F9000'
 
     const tx = await contract.populateTransaction['publicMint'](
         walletAddress, 1, hexProof,
@@ -256,10 +253,12 @@ async function approveTransaction(signedTx) {
                 document.getElementById('claim-button').innerHTML = 'Failed :('
             }
         } catch {
+            console.log(e)
             document.getElementById('claim-button').innerHTML = 'Failed :('
         }
     
-    } catch {
+    } catch (e){
+        console.log(e)
         document.getElementById('claim-button').innerHTML = 'Failed :('
     }
    
