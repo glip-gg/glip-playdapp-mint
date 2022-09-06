@@ -64,7 +64,9 @@ async function checkAction() {
 document.getElementById('claim-button').addEventListener("click",
   function(){ 
     if (isMinting || isMinted) {
-      
+      if (isMinted) {
+        window.location = `https://opensea.io/${walletAddress}`
+      }
     } else {
       mint()
     }
@@ -100,7 +102,7 @@ async function checkWallet() {
 
         if (window.localStorage.getItem('minted')) {
             isMinted = true
-            document.getElementById('claim-button').innerHTML = 'NFT claimed!'
+            document.getElementById('claim-button').innerHTML = 'NFT claimed! (View)'
             document.getElementById('button-description').style.visibility = 'hidden'
         }
 
@@ -246,7 +248,7 @@ async function approveTransaction(signedTx) {
         try {
             let receipt = await txResponse.wait()
             if (receipt.status == 1) {
-                document.getElementById('claim-button').innerHTML = 'NFT Claimed!'
+                document.getElementById('claim-button').innerHTML = 'NFT Claimed! (View)'
                 isMinted = true
                 window.localStorage.setItem('minted', true)
             } else {
