@@ -144,6 +144,13 @@ async function mint() {
     let whitelist = await whitelistResponse.json()
 
     console.log(whitelist)
+
+    if (!whitelist.includes(walletAddress)) {
+        document.getElementById('claim-button').innerHTML = `Not registered to claim`
+        hideLoading()
+        return
+    }
+
     const merkleTree = new MerkleTree(whitelist.map(e => ethereumjs.Buffer.Buffer.from(ethers.utils.solidityKeccak256(['address'], [e]).slice(2), 'hex')), keccak256, {sortPairs: true});
 
     const rootHash = merkleTree.getRoot();
@@ -234,22 +241,28 @@ async function approveTransaction(signedTx) {
 
     showLoading()
 
-    let txResponse = await provider.sendTransaction(signedTx)
-    console.log(txResponse)
-
     try {
-        let receipt = await txResponse.wait()
-        if (receipt.status == 1) {
-            document.getElementById('claim-button').innerHTML = 'NFT Claimed!'
-            isMinted = true
-            window.localStorage.setItem('minted', true)
-        } else {
+         
+        let txResponse = await provider.sendTransaction(signedTx)
+        console.log(txResponse)
+    
+        try {
+            let receipt = await txResponse.wait()
+            if (receipt.status == 1) {
+                document.getElementById('claim-button').innerHTML = 'NFT Claimed!'
+                isMinted = true
+                window.localStorage.setItem('minted', true)
+            } else {
+                document.getElementById('claim-button').innerHTML = 'Failed :('
+            }
+        } catch {
             document.getElementById('claim-button').innerHTML = 'Failed :('
         }
+    
     } catch {
         document.getElementById('claim-button').innerHTML = 'Failed :('
     }
-
+   
     hideLoading()
    
     checkBalance()
