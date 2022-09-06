@@ -6,8 +6,7 @@ let isMinted = false
 let walletAddress = ''
 let walletId = ''
 
-// let mintStartTime = 1662418800
-let minStartTime = 1662429800
+let mintStartTime = 1662418800
 
 let walletBalance = 0
 
@@ -141,18 +140,18 @@ async function mint() {
 
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
     
-    const leafNodes = whitelistAddresses.map(addr => keccak256(addr));
-    const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true});
+    let whitelistResponse = await fetch("whitelist.json")
+    let whitelist = await whitelistResponse.json()
+
+    console.log(whitelist)
+    const merkleTree = new MerkleTree(whitelist.map(e => ethereumjs.Buffer.Buffer.from(ethers.utils.solidityKeccak256(['address'], [e]).slice(2), 'hex')), keccak256, {sortPairs: true});
+
     const rootHash = merkleTree.getRoot();
 
-    const claimingAddress = walletAddress
-
-    const hexProof = merkleTree.getHexProof(keccak256(claimingAddress));
+    const hexProof = merkleTree.getHexProof(ethereumjs.Buffer.Buffer.from(ethers.utils.solidityKeccak256(['address'], [walletAddress]).slice(2), 'hex'))
 
     console.log("Root Hash: ", rootHash.toString('hex'));
     console.log(hexProof);
-
-    console.log(merkleTree.verify(hexProof, keccak256(claimingAddress), rootHash))
 
     const feeData = await provider.getFeeData()
     const nonce = await provider.getTransactionCount(walletAddress)
@@ -272,5 +271,3 @@ function showLoading() {
 function hideLoading() {
     document.getElementById('loader').style.visibility = 'hidden'
 }
-
-let whitelistAddresses = ['0x9bf19a87b973ebf02f0c6c1e5d01ebdb099295b7', '0x697530603b985817C9d81154eC3eE0384123feA1']
